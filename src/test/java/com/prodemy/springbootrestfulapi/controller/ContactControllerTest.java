@@ -1,12 +1,12 @@
 package com.prodemy.springbootrestfulapi.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prodemy.springbootrestfulapi.entity.Contact;
 import com.prodemy.springbootrestfulapi.entity.User;
 import com.prodemy.springbootrestfulapi.model.ContactResponse;
 import com.prodemy.springbootrestfulapi.model.CreateContactRequest;
+import com.prodemy.springbootrestfulapi.model.UpdateContactRequest;
 import com.prodemy.springbootrestfulapi.model.WebResponse;
 import com.prodemy.springbootrestfulapi.repository.ContactRepository;
 import com.prodemy.springbootrestfulapi.repository.UserRepository;
@@ -164,6 +164,68 @@ class ContactControllerTest {
         });
     }
 
+    @Test
+    void updateContactBadRequest() throws Exception {
+        UpdateContactRequest request = new UpdateContactRequest();
+        request.setFirstName("");
+        request.setEmail("wrong email");
+
+        mockMvc.perform(
+                put("/api/contacts/shalala")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "tokenTest")
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void updateContactSuccess() throws Exception {
+        User user = userRepository.findById("test").orElseThrow();
+
+        Contact contact = new Contact();
+        contact.setId(UUID.randomUUID().toString());
+        contact.setUser(user);
+        contact.setFirstName("Anshary");
+        contact.setLastName("Damar");
+        contact.setEmail("ansharydamar@gmail.com");
+        contact.setPhone("08198765432");
+        contactRepository.save(contact);
+
+        CreateContactRequest request = new CreateContactRequest();
+        request.setFirstName("Anshary");
+        request.setLastName("Damar Galih");
+        request.setPhone("08123456789");
+        request.setEmail("ansharydamar@gmail.com");
+
+        mockMvc.perform(
+                put("/api/contacts/" + contact.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "tokenTest")
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<ContactResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(request.getFirstName() , response.getData().getFirstName());
+            assertEquals(request.getLastName(), response.getData().getLastName());
+            assertEquals(request.getEmail(), response.getData().getEmail());
+            assertEquals(request.getPhone(), response.getData().getPhone());
+
+            assertTrue(contactRepository.existsById(response.getData().getId()));
+        });
+    }
 
 
 }

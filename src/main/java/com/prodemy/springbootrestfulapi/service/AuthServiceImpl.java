@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.UUID;
 
 @Service
-public class AuthServiceImplementation implements AuthService {
+public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UserRepository userRepository;
