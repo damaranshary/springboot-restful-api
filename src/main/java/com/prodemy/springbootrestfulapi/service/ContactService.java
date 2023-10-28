@@ -15,4 +15,6 @@ public interface ContactService {
     ContactResponse getContact(User user, String id);
 
     ContactResponse updateContact(User user, UpdateContactRequest request);
+
+    void deleteContact(User user, String contactId);
 }
