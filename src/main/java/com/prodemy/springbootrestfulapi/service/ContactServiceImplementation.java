@@ -6,7 +6,9 @@ import com.prodemy.springbootrestfulapi.model.ContactResponse;
 import com.prodemy.springbootrestfulapi.model.CreateContactRequest;
 import com.prodemy.springbootrestfulapi.repository.ContactRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -34,6 +36,18 @@ public class ContactServiceImplementation implements ContactService {
 
         contactRepository.save(contact);
 
+        return toContactResponse(contact);
+    }
+
+    @Override
+    public ContactResponse getContact(User user, String id) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        return toContactResponse(contact);
+    }
+
+    private ContactResponse toContactResponse (Contact contact) {
         return ContactResponse.builder()
                 .id(contact.getId())
                 .firstName(contact.getFirstName())

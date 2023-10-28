@@ -8,9 +8,7 @@ import com.prodemy.springbootrestfulapi.model.WebResponse;
 import com.prodemy.springbootrestfulapi.service.ContactService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ContactController {
@@ -23,8 +21,17 @@ public class ContactController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<ContactResponse> createPhone(User user, @RequestBody CreateContactRequest request) {
+    public WebResponse<ContactResponse> createContact(User user, @RequestBody CreateContactRequest request) {
         ContactResponse contactResponse = contactService.createContact(user ,request);
+
+        return WebResponse.<ContactResponse>builder().data(contactResponse).build();
+    }
+
+    @GetMapping(
+            path = "/api/contacts/{contactId}"
+    )
+    public WebResponse<ContactResponse> getContact(User user, @PathVariable(value = "contactId") String contactId) {
+        ContactResponse contactResponse = contactService.getContact(user, contactId);
 
         return WebResponse.<ContactResponse>builder().data(contactResponse).build();
     }
